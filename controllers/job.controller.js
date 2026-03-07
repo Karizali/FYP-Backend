@@ -22,7 +22,7 @@ async function listJobs(req, res, next) {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('-inputFiles -output.glbCloudinaryId -output.thumbnailCloudinaryId'),
+        .select('-inputFiles.cloudinaryId -inputFiles.secureUrl -inputFiles.folder -output.glbCloudinaryId -output.thumbnailCloudinaryId'),
       Job.countDocuments(filter),
     ]);
 

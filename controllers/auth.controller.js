@@ -80,12 +80,23 @@ async function login(req, res, next) {
     const token = signToken(user._id);
     logger.info(`User logged in: ${user.email}`);
 
+    // Cookie options
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    };
+
+    res.cookie('token', token, cookieOptions);
+
     res.json({
       success: true,
       message: 'Logged in successfully.',
       token,
       user: user.toPublic(),
     });
+
   } catch (error) {
     next(error);
   }

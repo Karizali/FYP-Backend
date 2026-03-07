@@ -11,56 +11,49 @@ const logger = require('../utils/logger');
 // Usage:
 //   router.get('/protected', authenticate, handler);
 //
+
+
 async function authenticate(req, res, next) {
   try {
-    // ── 1. Extract token ──────────────────────────────────────────────────────
-    const authHeader = req.headers.authorization;
+    // ── 1. Extract token from HTTP-only cookie ───────────────────────────────
+    const token = req.cookies?.token;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Authorization token missing. Include "Authorization: Bearer <token>" in your request headers.',
+        message: 'Authentication token missing. Please log in.',
       });
     }
 
-    const token = authHeader.split(' ')[1];
-
-    if (!token || token.trim() === '') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token is empty.',
-      });
-    }
-
-    // ── 2. Verify & decode ────────────────────────────────────────────────────
+    // ── 2. Verify & decode ──────────────────────────────────────────────────
     let decoded;
+
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (jwtErr) {
+
       if (jwtErr.name === 'TokenExpiredError') {
         return res.status(401).json({
-          success:   false,
-          message:   'Token expired. Please log in again.',
+          success: false,
+          message: 'Token expired. Please log in again.',
           expiredAt: jwtErr.expiredAt,
         });
       }
+
       if (jwtErr.name === 'JsonWebTokenError') {
         return res.status(401).json({
           success: false,
           message: 'Invalid token.',
         });
       }
-      // NotBeforeError or anything else
+
       return res.status(401).json({
         success: false,
         message: 'Token validation failed.',
       });
     }
 
-    // ── 3. Load user from DB ──────────────────────────────────────────────────
-    // We always hit the DB (not just trust the token payload) so that:
-    //   • Deactivated accounts are blocked immediately
-    //   • Plan changes / name updates are reflected without re-login
+    // ── 3. Load user from DB ────────────────────────────────────────────────
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -77,18 +70,19 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // ── 4. Attach user to request ─────────────────────────────────────────────
+    // ── 4. Attach user to request ───────────────────────────────────────────
     req.user = user;
 
-    logger.debug(`Authenticated: user=${user._id} path=${req.method} ${req.originalUrl}`);
+    logger.debug(
+      `Authenticated: user=${user._id} path=${req.method} ${req.originalUrl}`
+    );
+
     next();
   } catch (err) {
-    // Unexpected error (e.g. DB down) — pass to global error handler
     logger.error(`authenticate middleware error: ${err.message}`);
     next(err);
   }
 }
-
 // ─── optionalAuthenticate ──────────────────────────────────────────────────────
 // Same as authenticate but does NOT reject unauthenticated requests.
 // Sets req.user if a valid token is present, otherwise req.user stays undefined.

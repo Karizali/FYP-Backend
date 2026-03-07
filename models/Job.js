@@ -254,7 +254,7 @@ jobSchema.methods.toSummary = function () {
     status:            this.status,
     progressPct:       this.progressPct,
     inputType:         this.inputType,
-    fileCount:         this.inputFiles.length,
+    fileCount:         this.inputFiles?.length ?? 0,
     settings:          this.settings,
     timeline:          this.timeline,
     durationSeconds:   this.durationSeconds,
