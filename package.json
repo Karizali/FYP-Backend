@@ -2,7 +2,7 @@
   "name": "gaussian-splatting-backend",
   "version": "1.0.0",
   "description": "REST API Gateway for 3D Gaussian Splatting FYP — handles auth, uploads, job queue and GPU worker callbacks.",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
