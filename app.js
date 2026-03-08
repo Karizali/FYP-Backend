@@ -3,12 +3,10 @@ const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
-const cookieParser = require('cookie-parser');
 const logger = require('./utils/logger');
 
 const app = express();
 
-app.use(cookieParser());
 // ─── Security Middleware ───────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({
@@ -61,12 +59,14 @@ const authRoutes    = require('./routes/auth.routes');
 const uploadRoutes  = require('./routes/upload.routes');
 const jobRoutes     = require('./routes/job.routes');
 const webhookRoutes = require('./routes/webhook.routes');
+const storageRoutes = require('./routes/storage.routes');
 const errorHandler  = require('./middleware/errorHandler');
 
 app.use('/api/auth',     authRoutes);
 app.use('/api/upload',   uploadRoutes);
 app.use('/api/jobs',     jobCreationLimiter, jobRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/storage',  storageRoutes);
 
 // ─── 404 Fallback ─────────────────────────────────────────────────────────────
 // Note: '/{*path}' required by path-to-regexp v8+ (used in Express 5 / Node 24)

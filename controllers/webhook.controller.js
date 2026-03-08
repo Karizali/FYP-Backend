@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Job = require('../models/Job');
-const { uploadBuffer, deleteFile } = require('../config/storage');
+// GPU worker uploads GLB to Cloudinary directly — webhook just saves the IDs
 const notificationService = require('../services/notifications');
 const logger = require('../utils/logger');
 

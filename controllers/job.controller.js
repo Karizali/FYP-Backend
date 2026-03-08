@@ -1,5 +1,5 @@
 const Job = require('../models/Job');
-const { getSignedUrl, deleteJobFiles } = require('../config/storage');
+const { generateDownloadUrl, deleteJobFiles } = require('../storage/cloudinaryStorage');
 const logger = require('../utils/logger');
 
 // ─── GET /api/jobs ────────────────────────────────────────────────────────────
@@ -99,9 +99,9 @@ async function getJobResult(req, res, next) {
 
     // Generate signed Cloudinary URLs (GLB: 24hr, thumbnail: 2hr)
     const [glbUrl, thumbnailUrl] = await Promise.all([
-      getSignedUrl(job.output.glbCloudinaryId, 'raw',   86400),
+      generateDownloadUrl(job.output.glbCloudinaryId, 'raw',   86400),
       job.output.thumbnailCloudinaryId
-        ? getSignedUrl(job.output.thumbnailCloudinaryId, 'image', 7200)
+        ? generateDownloadUrl(job.output.thumbnailCloudinaryId, 'image', 7200)
         : null,
     ]);
 

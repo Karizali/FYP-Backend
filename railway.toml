@@ -1,0 +1,20 @@
+[build]
+builder = "nixpacks"
+
+[[services]]
+name = "api-server"
+
+[services.deploy]
+startCommand = "node server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[[services]]
+name = "job-worker"
+
+[services.deploy]
+startCommand = "node workers/worker.js"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5

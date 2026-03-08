@@ -1,0 +1,57 @@
+# ─── Runpod GPU Worker — 3D Gaussian Splatting ───────────────────────────────
+#
+# Build:  docker build -f Dockerfile.runpod -t your-dockerhub/gaussian-worker:latest .
+# Push:   docker push your-dockerhub/gaussian-worker:latest
+# Deploy: Create a Runpod Serverless endpoint using this image
+#
+# Requirements:
+#   - GPU: RTX 3090 / 4090 (24 GB VRAM) recommended
+#   - Disk: at least 20 GB (COLMAP + Gaussian splatting are large)
+
+FROM runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
+
+# ─── System packages ──────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    wget \
+    curl \
+    ffmpeg \
+    colmap \
+    blender \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Python packages ──────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+    runpod==1.6.2 \
+    cloudinary==1.36.0 \
+    requests==2.31.0 \
+    Pillow==10.1.0 \
+    numpy==1.26.2 \
+    torch==2.1.0 \
+    torchvision==0.16.0
+
+# ─── Real-ESRGAN (image enhancement) ─────────────────────────────────────────
+RUN git clone https://github.com/xinntao/Real-ESRGAN.git /Real-ESRGAN && \
+    cd /Real-ESRGAN && \
+    pip install --no-cache-dir basicsr facexlib gfpgan && \
+    pip install --no-cache-dir -r requirements.txt && \
+    python setup.py develop && \
+    # Download model weights
+    wget -q -P /Real-ESRGAN/weights/ \
+      https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
+
+# ─── 3D Gaussian Splatting ────────────────────────────────────────────────────
+RUN git clone https://github.com/graphdeco-inria/gaussian-splatting.git /gaussian-splatting && \
+    cd /gaussian-splatting && \
+    pip install --no-cache-dir submodules/diff-gaussian-rasterization && \
+    pip install --no-cache-dir submodules/simple-knn && \
+    pip install --no-cache-dir plyfile tqdm
+
+# ─── Copy worker script ───────────────────────────────────────────────────────
+COPY src/workers/runpod_worker.py /handler.py
+
+WORKDIR /
+
+CMD ["python", "-u", "/handler.py"]
