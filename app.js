@@ -3,9 +3,12 @@ const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const cookieParser =require('cookie-parser')
 const logger = require('./utils/logger');
 
 const app = express();
+
+app.use(cookieParser()); // cookie parser
 
 // ─── Security Middleware ───────────────────────────────────────────────────────
 app.use(helmet());

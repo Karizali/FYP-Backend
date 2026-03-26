@@ -13,10 +13,14 @@ const logger = require('../utils/logger');
 //
 
 
+
+
+
 async function authenticate(req, res, next) {
   try {
     // ── 1. Extract token from HTTP-only cookie ───────────────────────────────
     const token = req.cookies?.token;
+    console.log("token",token)
 
     if (!token) {
       return res.status(401).json({
