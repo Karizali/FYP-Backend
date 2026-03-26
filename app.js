@@ -9,10 +9,15 @@ const app = express();
 
 // ─── Security Middleware ───────────────────────────────────────────────────────
 app.use(helmet());
+// app.use(cors({
+//   origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// }));
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: true, // or whitelist specific origins
+  credentials: true, // REQUIRED — without this cookies won't be sent
 }));
 
 // ─── Global Rate Limit (100 req / 15 min per IP) ──────────────────────────────
